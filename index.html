@@ -3,122 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classroom | R.E.P.O. Fan Game</title>
+    <title>No Toques las Paredes</title>
     <style>
         body {
             margin: 0;
-            background: #050505;
-            color: #00ff41; /* Estilo terminal */
+            background-color: #050505;
+            color: white;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
         }
 
-        /* Efecto de linterna */
-        #light {
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            border: 2px solid #333;
+            background: #000;
+            cursor: crosshair;
+        }
+
+        /* El laberinto (SVG para mayor precisión) */
+        .wall {
+            fill: #1a1a1a;
+        }
+
+        #scare-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            background: radial-gradient(circle 150px at var(--x) var(--y), rgba(255,255,200,0.15) 0%, rgba(0,0,0,0.98) 100%);
-            z-index: 10;
+            width: 100vw;
+            height: 100vh;
+            background: url('https://i.imgur.com/H7S8zXm.jpg') center center / cover;
+            display: none;
+            z-index: 100;
         }
 
-        #game-container {
-            text-align: center;
-            border: 2px solid #333;
-            padding: 50px;
-            background: #0a0a0a;
-            position: relative;
-        }
-
-        h1 {
-            font-size: 4rem;
-            letter-spacing: 15px;
-            color: #ff3e3e;
-            text-shadow: 0 0 10px rgba(255,0,0,0.5);
-            margin: 0;
-        }
-
-        .status {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            color: #555;
-        }
-
-        #inventory {
-            margin-top: 30px;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
-
-        .item { color: #ffd700; margin: 5px 0; font-size: 0.9rem; }
-
-        .ui-overlay {
+        #ui {
             position: absolute;
             top: 10px;
             left: 10px;
-            text-align: left;
-            font-size: 0.8rem;
-            z-index: 5;
+            pointer-events: none;
         }
 
-        /* Ruido visual de fondo */
-        .noise {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.05;
-            pointer-events: none;
-            background: url('https://media.giphy.com/media/oEI9uWUicG3BK/giphy.gif');
+        .goal {
+            fill: #440000;
+            transition: fill 0.3s;
+        }
+
+        .goal:hover {
+            fill: #ff0000;
+        }
+
+        #message {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
         }
     </style>
 </head>
 <body>
 
-    <div class="noise"></div>
-    <div id="light"></div>
+<div id="ui">
+    <div id="message">Llega al final sin tocar los bordes...</div>
+</div>
 
-    <div class="ui-overlay">
-        ID: SUJETO-402<br>
-        OBJETIVO: RECUPERAR ACTIVOS<br>
-        PELIGRO: ALTO
-    </div>
-
-    <div id="game-container">
-        <h1>CLASSROOM</h1>
-        <p class="status">_CONEXIÓN CON EL SERVIDOR ESTABLECIDA</p>
+<div id="game-container">
+    <svg width="800" height="600" viewBox="0 0 800 600">
+        <rect class="wall" x="0" y="0" width="800" height="600" />
         
-        <div id="inventory">
-            <p>INVENTARIO DE RECUPERACIÓN:</p>
-            <div id="items-list">
-                <div class="item">> Cargador de batería (Recuperado)</div>
-                <div class="item">> Muestra biológica (Recuperado)</div>
-            </div>
-        </div>
-    </div>
+        <path id="path" d="M 50 300 L 200 300 L 200 100 L 500 100 L 500 500 L 700 500 L 750 500" 
+              stroke="white" stroke-width="60" fill="none" stroke-linecap="round" />
 
-    <script>
-        const light = document.getElementById('light');
+        <circle id="goal" cx="750" cy="500" r="25" class="goal" />
         
-        // Mover la linterna con el mouse
-        document.addEventListener('mousemove', (e) => {
-            light.style.setProperty('--x', e.clientX + 'px');
-            light.style.setProperty('--y', e.clientY + 'px');
-        });
+        <circle cx="50" cy="300" r="10" fill="green" />
+    </svg>
+</div>
 
-        // Efecto de parpadeo aleatorio (atmósfera de terror)
-        setInterval(() => {
-            if(Math.random() > 0.95) {
-                light.style.opacity = "0.2";
-                setTimeout(() => light.style.opacity = "1", 50);
-            }
-        }, 100);
-    </script>
+<div id="scare-overlay"></div>
+
+<audio id="scream-snd" src="https://www.soundjay.com/human/sounds/person-screaming-01.mp3"></audio>
+<audio id="ambient-snd" loop src="https://www.soundjay.com/nature/sounds/wind-01.mp3"></audio>
+
+<script>
+    const container = document.getElementById('game-container');
+    const path = document.getElementById('path');
+    const goal = document.getElementById('goal');
+    const scareOverlay = document.getElementById('scare-overlay');
+    const screamSnd = document.getElementById('scream-snd');
+    const ambientSnd = document.getElementById('ambient-snd');
+
+    let gameStarted = false;
+
+    // Iniciar audio al primer click (política de navegadores)
+    window.addEventListener('mousedown', () => {
+        if(!gameStarted) {
+            ambientSnd.play();
+            gameStarted = true;
+        }
+    });
+
+    // Detectar si el mouse sale del camino blanco
+    path.addEventListener('mouseleave', () => {
+        if(gameStarted) triggerScare();
+    });
+
+    // Ganar el juego
+    goal.addEventListener('mouseenter', () => {
+        if(gameStarted) {
+            alert("Has escapado... por ahora.");
+            location.reload();
+        }
+    });
+
+    function triggerScare() {
+        scareOverlay.style.display = 'block';
+        screamSnd.play();
+        
+        // Efecto de vibración
+        document.body.style.animation = "shake 0.1s infinite";
+        
+        setTimeout(() => {
+            alert("TE ENCONTRARON.");
+            location.reload();
+        }, 1500);
+    }
+</script>
+
+<style>
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        25% { transform: translate(-3px, 0px) rotate(-1deg); }
+        50% { transform: translate(3px, 2px) rotate(1deg); }
+        100% { transform: translate(1px, -1px) rotate(0deg); }
+    }
+</style>
+
 </body>
 </html>
