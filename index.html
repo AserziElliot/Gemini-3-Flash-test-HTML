@@ -3,44 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Sitio en Render</title>
+    <title>Classroom | R.E.P.O. Fan Game</title>
     <style>
         body {
             margin: 0;
-            height: 100vh;
+            background: #050505;
+            color: #00ff41; /* Estilo terminal */
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
+            justify-content: center;
+            height: 100vh;
         }
-        .card {
+
+        /* Efecto de linterna */
+        #light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle 150px at var(--x) var(--y), rgba(255,255,200,0.15) 0%, rgba(0,0,0,0.98) 100%);
+            z-index: 10;
+        }
+
+        #game-container {
             text-align: center;
-            padding: 3rem;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 2px solid #333;
+            padding: 50px;
+            background: #0a0a0a;
+            position: relative;
         }
-        h1 { margin-bottom: 10px; font-size: 2.5rem; }
-        p { color: #aaa; }
-        .badge {
-            display: inline-block;
+
+        h1 {
+            font-size: 4rem;
+            letter-spacing: 15px;
+            color: #ff3e3e;
+            text-shadow: 0 0 10px rgba(255,0,0,0.5);
+            margin: 0;
+        }
+
+        .status {
             margin-top: 20px;
-            padding: 10px 20px;
-            background: #007bff;
-            border-radius: 50px;
-            font-weight: bold;
+            font-size: 1.2rem;
+            color: #555;
+        }
+
+        #inventory {
+            margin-top: 30px;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+
+        .item { color: #ffd700; margin: 5px 0; font-size: 0.9rem; }
+
+        .ui-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            text-align: left;
+            font-size: 0.8rem;
+            z-index: 5;
+        }
+
+        /* Ruido visual de fondo */
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.05;
+            pointer-events: none;
+            background: url('https://media.giphy.com/media/oEI9uWUicG3BK/giphy.gif');
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🚀 ¡Hola desde Render!</h1>
-        <p>Esta página fue creada en una Chromebook.</p>
-        <div class="badge">Estatus: Online</div>
+
+    <div class="noise"></div>
+    <div id="light"></div>
+
+    <div class="ui-overlay">
+        ID: SUJETO-402<br>
+        OBJETIVO: RECUPERAR ACTIVOS<br>
+        PELIGRO: ALTO
     </div>
+
+    <div id="game-container">
+        <h1>CLASSROOM</h1>
+        <p class="status">_CONEXIÓN CON EL SERVIDOR ESTABLECIDA</p>
+        
+        <div id="inventory">
+            <p>INVENTARIO DE RECUPERACIÓN:</p>
+            <div id="items-list">
+                <div class="item">> Cargador de batería (Recuperado)</div>
+                <div class="item">> Muestra biológica (Recuperado)</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const light = document.getElementById('light');
+        
+        // Mover la linterna con el mouse
+        document.addEventListener('mousemove', (e) => {
+            light.style.setProperty('--x', e.clientX + 'px');
+            light.style.setProperty('--y', e.clientY + 'px');
+        });
+
+        // Efecto de parpadeo aleatorio (atmósfera de terror)
+        setInterval(() => {
+            if(Math.random() > 0.95) {
+                light.style.opacity = "0.2";
+                setTimeout(() => light.style.opacity = "1", 50);
+            }
+        }, 100);
+    </script>
 </body>
 </html>
